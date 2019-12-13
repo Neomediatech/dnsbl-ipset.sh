@@ -121,7 +121,14 @@
 # dario - neomediatech 13 set 2019
 if [ "$1" = "start" ]; then
 	shift
-	LOG_DIR="/var/log/dnsbl-ipset"
+	FIREHOL_CONFIG_DIR="/etc/firehol"
+	if [ -f $FIREHOL_CONFIG_DIR/dnsbl-ipset.conf ]; then
+		tmpfile=$(mktemp)
+		grep LOG_DIR $FIREHOL_CONFIG_DIR/dnsbl-ipset.conf > $tmpfile
+		source $tmpfile 
+		rm -f $tmpfile
+	fi
+	LOG_DIR="${LOG_DIR:-/var/log/dnsbl-ipset}"
 	LOG_FILE="${LOG_DIR}/stdout.log"
 	[ -d $LOG_DIR ] || mkdir -p $LOG_DIR
 	[ -f ${LOG_DIR}/dnsbl-for-fail2ban.log ] || touch ${LOG_DIR}/dnsbl-for-fail2ban.log
@@ -1132,20 +1139,20 @@ parse_adns_asynch() {
 	done
 }
 
+# dario - un giorno di settembre 2019
 log_ip_ports() {
         local src= dst= proto= port=
 
         while read src dst proto port
         do
-#		for x in ${EXCLUSION_IPSETS} ${CACHE_IPSET} ${BLACKLIST_IPSET}
 		found=0
 		for x in ${EXCLUSION_IPSETS}
 		do
 			ipset --test "${x}" "${src}" 2>/dev/null
 			[ $? -eq 0 ] && found=1
 		done
-		[ $found -eq 0 ] && echo "$src" "$proto" "$port" >> host_port.log
-		echo "$src" "$dst"
+                [ $found -eq 0 ] && echo "$src" "$proto" "$port" >> host_port.log
+                echo "$src" "$dst"
         done
 }
 
