@@ -1,0 +1,30 @@
+/var/log/iptables.log {
+    weekly
+    rotate 6
+    compress
+
+    delaycompress
+    missingok
+
+    # If fail2ban runs as non-root it still needs to have write access
+    # to logfiles.
+    # create 640 fail2ban adm
+    create 664 root adm
+}
+
+/var/log/dnsbl-ipset/* {
+    weekly
+    rotate 6
+    compress
+
+    delaycompress
+    missingok
+    postrotate
+	/srv/bin/dnsbl-ipset.sh stop && sleep 3 && /srv/bin/dnsbl-ipset.sh start 1>/dev/null
+    endscript
+
+    # If fail2ban runs as non-root it still needs to have write access
+    # to logfiles.
+    # create 640 fail2ban adm
+    create 664 root adm
+}
