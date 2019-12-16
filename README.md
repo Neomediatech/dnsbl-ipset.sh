@@ -23,5 +23,8 @@ CREATE TABLE IF NOT EXISTS `blacklist` (
   `comment` text DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-```
+```  
+
+<b>Modify dnsbl-ipset accordingly e put it in /etc/logrotate.d</b>  
+
 ### comment and improvements are welcome
