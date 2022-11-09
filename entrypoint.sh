@@ -1,6 +1,6 @@
 #!/tini /bin/bash
 
-IF="$(ip ro ls default|awk '{print $NF}')"
+IF="$(ip ro ls default|awk '{print $5}')"
 [ -z "$IF" ] && IF="eth0"
 
 iptables -D INPUT -i $IF -p tcp -m state --state NEW -j LOG --log-level debug --log-prefix "AUDIT " 2>/dev/null
