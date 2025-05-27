@@ -27,10 +27,7 @@ jobs:
     needs: [build-and-push]
     uses: Neomediatech/gh-workflows/.github/workflows/scan-docker-image.yml@main
     with:
-      dockerfile: "Dockerfile.${{ matrix.version }}"
-      dockerdir: "."
       dockertag: ${{ matrix.version }}
-
 
   push-report-to-repo:
     strategy:
