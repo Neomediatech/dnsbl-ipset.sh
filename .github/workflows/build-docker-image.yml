@@ -1,0 +1,47 @@
+name: Build and Scan Docker Image
+
+on:
+  push:
+  #pull_request:
+  workflow_dispatch: # Permette di avviare il workflow manualmente dalla UI di GitHub
+
+jobs:
+  build-and-push:
+    secrets: inherit
+    strategy:
+      matrix:
+        version: [24.04, 22.04, 20.04]
+      max-parallel: 1
+      # non posso parallellizzare il processo perché l'upload delle immagini va in errore con "permission denied"
+    uses: Neomediatech/gh-workflows/.github/workflows/build-and-push-docker-image.yml@main
+    with:
+      dockerfile: "Dockerfile.${{ matrix.version }}"
+      dockerdir: "."
+      dockertag: ${{ matrix.version }}
+
+  scan-docker-image:
+    secrets: inherit
+    strategy:
+      matrix:
+        version: [24.04, 22.04, 20.04]
+    needs: [build-and-push]
+    uses: Neomediatech/gh-workflows/.github/workflows/scan-docker-image.yml@main
+    with:
+      dockerfile: "Dockerfile.${{ matrix.version }}"
+      dockerdir: "."
+      dockertag: ${{ matrix.version }}
+
+
+  push-report-to-repo:
+    strategy:
+      matrix:
+        version: [24.04, 22.04, 20.04]
+      max-parallel: 1
+    needs: [scan-docker-image]
+    secrets: inherit
+    uses: Neomediatech/gh-workflows/.github/workflows/copy-file-to-another-repo.yml@main
+    with:
+      file_id: ${{ needs.scan-docker-image.outputs.uploaded-file-id }}
+      filename: ${{ needs.scan-docker-image.outputs.file_to_copy_output }}
+      dockertag: ${{ matrix.version }}
+
